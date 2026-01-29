@@ -3,36 +3,32 @@ session_start();
 require_once __DIR__ . '/google_client.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Détecte l'URL de base (local ou Render)
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'];
-$baseUrl = $scheme . '://' . $host;
-
-$client = buildGoogleClient($baseUrl . '/create_event.php');
-
-// Traitement du formulaire
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
-    $authUrl = $client->createAuthUrl();
-    header('Location: ' . $authUrl);
+// Vérifier si l'utilisateur est authentifié
+if (!isset($_SESSION['access_token'])) {
+    header('Location: index.php');
     exit;
 }
 
-/**
- * On veut que le retour Google aille au callback
- */
-$client->setRedirectUri($baseUrl . '/drive_callback_test.php');
+$baseUrl = getenv('APP_URL');
+if (!$baseUrl) {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+    } else {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    }
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $baseUrl = $scheme . '://' . $host;
+}
+$baseUrl = rtrim($baseUrl, '/');
 
-/**
- * Si on arrive ici via POST (form), on stocke le nom
- */
+// Client avec token existant
+$client = buildGoogleClient($baseUrl . '/oauth_callback.php');
+$client->setAccessToken($_SESSION['access_token']);
+
+// Traitement du formulaire pour créer l'événement
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
+    // Créer le dossier Drive ici
+    // (logique métier)
+    exit;
 }
-
-/**
- * Démarre l'auth OAuth
- */
-$authUrl = $client->createAuthUrl();
-header('Location: ' . $authUrl);
-exit;
