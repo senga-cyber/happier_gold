@@ -2,9 +2,16 @@
 session_start();
 require_once __DIR__ . '/google_client.php';
 
+// 1) Base URL : priorité à APP_URL, sinon auto-détection
 $baseUrl = getenv('APP_URL');
 
-// Client Google avec redirect FIXE
+if (!$baseUrl) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $baseUrl = $scheme . '://' . $host;
+}
+
+// 2) Client Google avec redirect EXACT
 $client = buildGoogleClient($baseUrl . '/oauth_callback.php');
 
 if (!isset($_GET['code'])) {
@@ -14,7 +21,7 @@ if (!isset($_GET['code'])) {
 $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
 
 if (isset($token['error'])) {
-    die('Erreur OAuth : ' . $token['error_description']);
+    die('Erreur OAuth : ' . ($token['error_description'] ?? $token['error']));
 }
 
 $_SESSION['access_token'] = $token;
