@@ -1,4 +1,3 @@
+credentials.json
 /vendor/
 .env
-credentials.json
-*.log

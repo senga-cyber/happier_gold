@@ -1,4 +1,17 @@
 <?php
+
+// Charge les credentials depuis Render (env var)
+$credsJson = getenv('GOOGLE_CREDENTIALS_JSON');
+
+if ($credsJson) {
+    $tmpPath = sys_get_temp_dir() . '/google_credentials.json';
+    file_put_contents($tmpPath, $credsJson);
+    putenv("GOOGLE_APPLICATION_CREDENTIALS=$tmpPath");
+} else {
+    // fallback local (dev)
+    putenv("GOOGLE_APPLICATION_CREDENTIALS=" . __DIR__ . "/credentials.json");
+}
+
 session_start();
 require_once 'vendor/autoload.php';
 
