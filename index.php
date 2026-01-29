@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // OAuth Google
     $client = buildGoogleClient($baseUrl . '/create_event.php');
+    error_log("REDIRECT_URI = " . $baseUrl . "/create_event.php");
     $authUrl = $client->createAuthUrl();
 
     header('Location: ' . $authUrl);
