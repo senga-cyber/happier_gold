@@ -32,8 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
 
     // OAuth Google
-    $client = buildGoogleClient($baseUrl . '/create_event.php');
-    error_log("REDIRECT_URI = " . $baseUrl . "/create_event.php");
+    $client = buildGoogleClient($baseUrl . '/oauth_callback.php');
     $authUrl = $client->createAuthUrl();
 
     header('Location: ' . $authUrl);
