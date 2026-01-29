@@ -1,24 +1,15 @@
 <?php
+session_start();
+require_once __DIR__ . '/google_client.php';
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/phpqrcode/qrlib.php';
-session_start();
 
+// Détecte l'URL de base (local ou Render)
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'];
 $baseUrl = $scheme . '://' . $host;
 
-$client = new Google_Client();
-
-$credsJson = getenv('GOOGLE_CREDENTIALS_JSON');
-if ($credsJson) {
-    $client->setAuthConfig(json_decode($credsJson, true));
-} else {
-    $client->setAuthConfig(__DIR__ . '/credentials.json');
-}
-
-$client->addScope(Google_Service_Drive::DRIVE);
-$client->setAccessType('offline');
-$client->setRedirectUri($baseUrl . '/drive_callback_test.php');
+$client = buildGoogleClient($baseUrl . '/drive_callback_test.php');
 
 /**
  * 1) Récupérer le token

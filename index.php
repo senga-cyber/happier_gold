@@ -1,29 +1,18 @@
 <?php
-
-// Charge les credentials depuis Render (env var)
-$credsJson = getenv('GOOGLE_CREDENTIALS_JSON');
-
-if ($credsJson) {
-    $tmpPath = sys_get_temp_dir() . '/google_credentials.json';
-    file_put_contents($tmpPath, $credsJson);
-    putenv("GOOGLE_APPLICATION_CREDENTIALS=$tmpPath");
-} else {
-    // fallback local (dev)
-    putenv("GOOGLE_APPLICATION_CREDENTIALS=" . __DIR__ . "/credentials.json");
-}
-
 session_start();
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/google_client.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $_SESSION['event_name'] = $_POST['event_name'];
+    $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
 
-    $client = new Google_Client();
-    $client->setAuthConfig('credentials.json');
-    $client->addScope(Google_Service_Drive::DRIVE);
-    $client->setRedirectUri('http://localhost/lucaspro_qr_drive_final/create_event.php'); // Modifie si nécessaire
+    // Détecte l'URL de base (local ou Render)
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $baseUrl = $scheme . '://' . $host;
 
+    $client = buildGoogleClient($baseUrl . '/create_event.php');
     $authUrl = $client->createAuthUrl();
     header('Location: ' . $authUrl);
     exit;

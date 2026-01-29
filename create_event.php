@@ -1,33 +1,22 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
 session_start();
+require_once __DIR__ . '/google_client.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-/**
- * Détecte l'URL de base (local ou Render)
- */
+// Détecte l'URL de base (local ou Render)
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'];
 $baseUrl = $scheme . '://' . $host;
 
-/**
- * Crée un client Google en utilisant :
- * - Render: GOOGLE_CREDENTIALS_JSON
- * - Local : credentials.json
- */
-$client = new Google_Client();
+$client = buildGoogleClient($baseUrl . '/create_event.php');
 
-$credsJson = getenv('GOOGLE_CREDENTIALS_JSON');
-if ($credsJson) {
-    // Render
-    $client->setAuthConfig(json_decode($credsJson, true));
-} else {
-    // Local
-    $client->setAuthConfig(__DIR__ . '/credentials.json');
+// Traitement du formulaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
+    $authUrl = $client->createAuthUrl();
+    header('Location: ' . $authUrl);
+    exit;
 }
-
-$client->addScope(Google_Service_Drive::DRIVE);
-$client->setAccessType('offline');
-$client->setPrompt('consent');
 
 /**
  * On veut que le retour Google aille au callback
