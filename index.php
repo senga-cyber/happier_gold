@@ -1,19 +1,40 @@
 <?php
 session_start();
-require_once __DIR__ . '/google_client.php';
+
+// Autoload + Google client helper
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/google_client.php';
+
+/**
+ * Déterminer l'URL de base
+ * - En prod (Render) : APP_URL
+ * - En local : détection automatique
+ */
+$baseUrl = getenv('APP_URL');
+
+if (!$baseUrl) {
+    // Cas Render derrière proxy HTTPS
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+    } else {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    }
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $baseUrl = $scheme . '://' . $host;
+}
+
+// Nettoyage
+$baseUrl = rtrim($baseUrl, '/');
 
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
 
-    // Détecte l'URL de base (local ou Render)
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    $baseUrl = $scheme . '://' . $host;
-
+    // OAuth Google
     $client = buildGoogleClient($baseUrl . '/create_event.php');
     $authUrl = $client->createAuthUrl();
+
     header('Location: ' . $authUrl);
     exit;
 }
@@ -25,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lucas Pro - Événements</title>
+
   <style>
     body {
       margin: 0;
@@ -41,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .diapo {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       z-index: -1;
       width: 100%;
       height: 100%;
@@ -51,28 +74,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     @keyframes diapo {
       0%   { background-image: url('assets/1.PNG'); }
-      33%  { background-image: url('assets/2.jpg'); }
+      10%  { background-image: url('assets/2.jpg'); }
       20%  { background-image: url('assets/3.jpeg'); }
-      50%  { background-image: url('assets/4.jpg'); }
-      80%  { background-image: url('assets/5.jpg'); }
-      0%   { background-image: url('assets/6.jpg'); }
-      33%  { background-image: url('assets/7.jpg'); }
-      20%  { background-image: url('assets/8.jpg'); }
-      50%  { background-image: url('assets/9.jpg'); }
-      80%  { background-image: url('assets/10.jpg'); }
-      0%   { background-image: url('assets/11.jpg'); }
-      33%  { background-image: url('assets/12.jpg'); }
-      20%  { background-image: url('assets/13.jpg'); }
-      50%  { background-image: url('assets/14.jpg'); }
-      80%  { background-image: url('assets/15.jpg'); }
-      0%   { background-image: url('assets/16.jpg'); }
-      33%  { background-image: url('assets/17.jpg'); }
-      20%  { background-image: url('assets/18.jpg'); }
-      50%  { background-image: url('assets/19.jpg'); }
-      80%  { background-image: url('assets/20.jpg'); }
-      0%   { background-image: url('assets/21.jpg'); }
-      33%  { background-image: url('assets/22.jpg'); }
-      20%  { background-image: url('assets/23.jpg'); }
+      30%  { background-image: url('assets/4.jpg'); }
+      40%  { background-image: url('assets/5.jpg'); }
+      50%  { background-image: url('assets/6.jpg'); }
+      60%  { background-image: url('assets/7.jpg'); }
+      70%  { background-image: url('assets/8.jpg'); }
+      80%  { background-image: url('assets/9.jpg'); }
+      90%  { background-image: url('assets/10.jpg'); }
+      100% { background-image: url('assets/11.jpg'); }
     }
     form {
       background: rgba(0, 0, 0, 0.8);
@@ -86,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       display: block;
       width: 100%;
       margin-bottom: 1rem;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
     input[type="submit"] {
       background: #ffd700;
@@ -96,24 +107,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 1rem;
       cursor: pointer;
     }
-        footer {
+    footer {
       text-align: center;
       padding: 2rem;
-      font-size: 1rem;
+      font-size: 0.9rem;
       background: #000;
       color: #fff;
     }
     h1 {
       text-align: center;
-      padding: 2rem;
-      font-size: 1rem;
+      padding: 1.5rem;
+      font-size: 0.95rem;
       background: #000;
       color: #867409;
     }
   </style>
 </head>
+
 <body>
   <div class="diapo"></div>
+
   <header>
     <img src="assets/logo.png" alt="Logo" height="60" /><br />
     Happier Gold<br>
@@ -125,12 +138,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input type="text" id="event_name" name="event_name" required />
     <input type="submit" value="Créer l'événement et générer un QR" />
   </form>
-  <h1> 
+
+  <h1>
     Contact : lucasmpala2@gmail.com · WhatsApp : +243978255830 · Pinterest : @lucaspro
   </h1>
 
   <footer>
-    @copyright chadowork 2024 - Tous droits réservés.
+    © chadowork 2024 - Tous droits réservés.
   </footer>
 </body>
 </html>
