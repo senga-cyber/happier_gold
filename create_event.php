@@ -11,7 +11,7 @@ if (!isset($_SESSION['access_token'])) {
 }
 
 // Détecte l'URL de base (local ou Render)
-$baseUrl = getenv('APP_URL');
+$baseUrl = getBaseUrl();
 if (!$baseUrl) {
     if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
         $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'];
@@ -24,7 +24,7 @@ if (!$baseUrl) {
 $baseUrl = rtrim($baseUrl, '/');
 
 // Initialiser le client Google avec le token existant
-$client = buildGoogleClient($baseUrl . '/oauth_callback.php');
+$client = buildGoogleClient(getRedirectUri());
 $client->setAccessToken($_SESSION['access_token']);
 
 // Traiter la création du dossier Drive

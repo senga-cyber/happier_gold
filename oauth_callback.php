@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/google_client.php';
 
 // 1) Base URL : priorité à APP_URL, sinon auto-détection
-$baseUrl = getenv('APP_URL');
+$baseUrl = getBaseUrl();
 
 if (!$baseUrl) {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -12,7 +12,7 @@ if (!$baseUrl) {
 }
 
 // 2) Client Google avec redirect EXACT
-$client = buildGoogleClient($baseUrl . '/oauth_callback.php');
+$client = buildGoogleClient(getRedirectUri());
 
 if (!isset($_GET['code'])) {
     die('Code OAuth manquant');

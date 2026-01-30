@@ -5,9 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/phpqrcode/qrlib.php';
 
 // Détecte l'URL de base (local ou Render)
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'];
-$baseUrl = $scheme . '://' . $host;
+$baseUrl = getBaseUrl();
 
 $client = buildGoogleClient($baseUrl . '/drive_callback_test.php');
 

@@ -10,7 +10,7 @@ require_once __DIR__ . '/google_client.php';
  * - En prod (Render) : APP_URL
  * - En local : détection automatique
  */
-$baseUrl = getenv('APP_URL');
+$baseUrl = getBaseUrl();
 
 if (!$baseUrl) {
     // Cas Render derrière proxy HTTPS
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['event_name'] = $_POST['event_name'] ?? 'LucasPro Event';
 
     // OAuth Google
-    $client = buildGoogleClient($baseUrl . '/oauth_callback.php');
+    $client = buildGoogleClient(getRedirectUri());
     $authUrl = $client->createAuthUrl();
 
     header('Location: ' . $authUrl);
